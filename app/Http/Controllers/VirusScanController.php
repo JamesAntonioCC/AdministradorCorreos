@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VirusScan;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class VirusScanController extends Controller
 {
@@ -12,16 +13,15 @@ class VirusScanController extends Controller
         $scans = VirusScan::latest('scanned_at')->paginate(20);
         
         $stats = [
-            'clean_emails' => VirusScan::where('scan_result', 'clean')->count(),
-            'threats_detected' => VirusScan::where('scan_result', '!=', 'clean')->count(),
-            'quarantined' => VirusScan::where('quarantined', true)->count(),
-            'scans_today' => VirusScan::whereDate('scanned_at', today())->count(),
+            'clean_emails' => VirusScan::clean()->count(),
+            'threats_detected' => VirusScan::threats()->count(),
+            'quarantined' => VirusScan::quarantined()->count(),
+            'scans_today' => VirusScan::today()->count(),
         ];
 
         return view('virus-scan.index', compact('scans', 'stats'));
     }
 
-    // NUEVO MÉTODO PARA MOSTRAR DETALLES DE UN ANÁLISIS
     public function show(VirusScan $virusScan)
     {
         return view('virus-scan.show', compact('virusScan'));
@@ -29,25 +29,22 @@ class VirusScanController extends Controller
 
     public function quarantine()
     {
-        $quarantinedEmails = VirusScan::where('quarantined', true)
+        $quarantinedEmails = VirusScan::quarantined()
             ->latest('scanned_at')
             ->paginate(20);
         
         $stats = [
-            'total_quarantined' => VirusScan::where('quarantined', true)->count(),
-            'today_quarantined' => VirusScan::where('quarantined', true)
-                ->whereDate('scanned_at', today())->count(),
+            'total_quarantined' => VirusScan::quarantined()->count(),
+            'today_quarantined' => VirusScan::quarantined()->today()->count(),
             'released' => VirusScan::where('quarantined', false)
-                ->where('scan_result', '!=', 'clean')->count(),
+                ->threats()->count(),
         ];
 
         return view('virus-scan.quarantine', compact('quarantinedEmails', 'stats'));
     }
 
-    // NUEVO MÉTODO PARA MOSTRAR DETALLES DE UN CORREO EN CUARENTENA
     public function showQuarantine(VirusScan $virusScan)
     {
-        // Verificar que el correo esté en cuarentena
         if (!$virusScan->quarantined) {
             return redirect()->route('virus-scan.quarantine')
                 ->with('error', 'Este correo no está en cuarentena.');
@@ -75,5 +72,16 @@ class VirusScanController extends Controller
         $virusScan->delete();
         
         return redirect()->back()->with('success', 'Correo eliminado permanentemente.');
+    }
+
+    public function downloadAttachment(VirusScan $virusScan)
+    {
+        if (!$virusScan->attachment_name || !$virusScan->attachment_content) {
+            return redirect()->back()->with('error', 'No hay archivo adjunto disponible.');
+        }
+
+        return response($virusScan->attachment_content)
+            ->header('Content-Type', 'text/plain')
+            ->header('Content-Disposition', 'attachment; filename="' . $virusScan->attachment_name . '"');
     }
 }

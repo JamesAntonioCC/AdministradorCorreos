@@ -14,6 +14,9 @@ return new class extends Migration
             $table->string('sender_email');
             $table->string('recipient_email');
             $table->string('subject')->nullable();
+            $table->text('message_content')->nullable(); // NUEVO - Contenido del mensaje
+            $table->string('attachment_name')->nullable(); // NUEVO - Nombre del archivo adjunto
+            $table->text('attachment_content')->nullable(); // NUEVO - Contenido del archivo adjunto
             $table->enum('scan_result', ['clean', 'threat_detected', 'suspicious', 'error'])->default('clean');
             $table->string('threat_type')->nullable(); // virus, malware, phishing, spam, etc.
             $table->string('threat_name')->nullable();

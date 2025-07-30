@@ -38,6 +38,33 @@
         </div>
     </div>
 
+    <!-- Mensajes de éxito/error -->
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">{{ session('error') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -149,24 +176,8 @@
                             <span class="text-sm text-gray-900">{{ $scan->subject }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $result = $scan->scan_result;
-                                $resultText = [
-                                    'clean' => 'Limpio',
-                                    'threat_detected' => 'Amenaza Detectada',
-                                    'suspicious' => 'Sospechoso',
-                                    'error' => 'Error'
-                                ][$result] ?? 'Desconocido';
-                                
-                                $resultClass = [
-                                    'clean' => 'bg-green-100 text-green-800',
-                                    'threat_detected' => 'bg-red-100 text-red-800',
-                                    'suspicious' => 'bg-yellow-100 text-yellow-800',
-                                    'error' => 'bg-gray-100 text-gray-800'
-                                ][$result] ?? 'bg-gray-100 text-gray-800';
-                            @endphp
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $resultClass }}">
-                                {{ $resultText }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scan->scan_result_badge }}">
+                                {{ $scan->result_text }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -174,7 +185,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
-                                <a href="{{ route('virus-scan.show', $scan->id ?? 1) }}" class="text-indigo-600 hover:text-indigo-900" title="Ver detalles">
+                                <a href="{{ route('virus-scan.show', $scan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Ver detalles">
                                     <i class="fas fa-eye w-4 h-4"></i>
                                 </a>
                                 @if($scan->scan_result !== 'clean' && !$scan->quarantined)
@@ -207,11 +218,4 @@
         @endif
     </div>
 </div>
-
-<script>
-function viewScanDetails(scanId) {
-    alert('Ver detalles del análisis #' + scanId);
-    // Aquí puedes implementar la lógica para mostrar detalles
-}
-</script>
 @endsection

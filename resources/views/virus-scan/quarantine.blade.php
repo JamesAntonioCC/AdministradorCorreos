@@ -44,6 +44,20 @@
         </div>
     </div>
 
+    <!-- Mensajes de éxito/error -->
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -91,16 +105,6 @@
                     <h2 class="text-lg font-semibold text-gray-900">Correos en Cuarentena</h2>
                     <p class="text-sm text-gray-500">{{ $quarantinedEmails->total() }} correos en cuarentena</p>
                 </div>
-                <div class="flex space-x-2">
-                    <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" onclick="bulkDelete()">
-                        <i class="fas fa-trash mr-2"></i>
-                        Eliminar Seleccionados
-                    </button>
-                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors" onclick="bulkRelease()">
-                        <i class="fas fa-unlock mr-2"></i>
-                        Liberar Seleccionados
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -108,9 +112,6 @@
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left">
-                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="rounded border-gray-300 text-indigo-600">
-                        </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Remitente
                         </th>
@@ -135,9 +136,6 @@
                     @forelse($quarantinedEmails as $email)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <input type="checkbox" name="selected_emails[]" value="{{ $email->id }}" class="rounded border-gray-300 text-indigo-600">
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-medium text-gray-900">{{ $email->sender_email }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -148,8 +146,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
-                                <span class="text-sm text-gray-900">{{ $email->threat_name ?? $email->scan_result }}</span>
+                                <i class="{{ $email->threat_type_icon }} text-red-600 mr-2"></i>
+                                <span class="text-sm text-gray-900">{{ $email->threat_display_name }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -183,7 +181,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             No hay correos en cuarentena.
                         </td>
                     </tr>
@@ -200,48 +198,4 @@
         @endif
     </div>
 </div>
-
-@push('scripts')
-<script>
-function toggleSelectAll() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('input[name="selected_emails[]"]');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAll.checked;
-    });
-}
-
-function viewEmailDetails(emailId) {
-    alert('Ver detalles del correo #' + emailId);
-    // Aquí puedes implementar la lógica para mostrar detalles
-}
-
-function bulkRelease() {
-    const selected = document.querySelectorAll('input[name="selected_emails[]"]:checked');
-    if (selected.length === 0) {
-        alert('Por favor selecciona al menos un correo.');
-        return;
-    }
-    
-    if (confirm(`¿Estás seguro de que quieres liberar ${selected.length} correo(s) de cuarentena?`)) {
-        alert('Correos liberados exitosamente.');
-        location.reload();
-    }
-}
-
-function bulkDelete() {
-    const selected = document.querySelectorAll('input[name="selected_emails[]"]:checked');
-    if (selected.length === 0) {
-        alert('Por favor selecciona al menos un correo.');
-        return;
-    }
-    
-    if (confirm(`¿Estás seguro de que quieres eliminar permanentemente ${selected.length} correo(s)?`)) {
-        alert('Correos eliminados exitosamente.');
-        location.reload();
-    }
-}
-</script>
-@endpush
 @endsection

@@ -72,15 +72,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [EmailLogsController::class, 'index'])->name('index');
     });
 
-    // Virus Scan - RUTAS CORREGIDAS Y AMPLIADAS
+    // Virus Scan - ORDEN CORRECTO DE RUTAS
     Route::prefix('virus-scan')->name('virus-scan.')->group(function () {
         Route::get('/', [VirusScanController::class, 'index'])->name('index');
-        Route::get('/{virusScan}', [VirusScanController::class, 'show'])->name('show'); // NUEVA RUTA
+        
+        // Rutas específicas ANTES de las rutas con parámetros
         Route::get('/quarantine', [VirusScanController::class, 'quarantine'])->name('quarantine');
-        Route::get('/quarantine/{virusScan}', [VirusScanController::class, 'showQuarantine'])->name('quarantine.show'); // NUEVA RUTA
+        Route::get('/quarantine/{virusScan}', [VirusScanController::class, 'showQuarantine'])->name('quarantine.show');
+        
+        // Rutas con parámetros AL FINAL
+        Route::get('/{virusScan}', [VirusScanController::class, 'show'])->name('show');
         Route::post('/{virusScan}/put-in-quarantine', [VirusScanController::class, 'putInQuarantine'])->name('put-in-quarantine');
         Route::post('/{virusScan}/release', [VirusScanController::class, 'release'])->name('release');
         Route::delete('/{virusScan}', [VirusScanController::class, 'delete'])->name('delete');
+        Route::get('/{virusScan}/download-attachment', [VirusScanController::class, 'downloadAttachment'])->name('download-attachment');
     });
 
     // Email Import
