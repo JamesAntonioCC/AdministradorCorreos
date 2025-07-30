@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AutoReply;
 use App\Models\Mailbox;
-use Illuminate\Routing\Controller;
 
 class AutoReplyController extends Controller
 {

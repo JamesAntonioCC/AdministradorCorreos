@@ -30,6 +30,8 @@ class Mailbox extends Model
         'password',
     ];
 
+    protected $dates = ['deleted_at']; // Added for SoftDeletes
+
     // Relaciones
     public function aliases()
     {

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Create Email Alias - Administración de Correos')
+@section('title', 'Edit Email Alias - Administración de Correos')
 
 @section('content')
 <div class="max-w-2xl mx-auto">
@@ -22,7 +22,7 @@
             <li aria-current="page">
                 <div class="flex items-center">
                     <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-900">Create</span>
+                    <span class="text-sm font-medium text-gray-900">Edit</span>
                 </div>
             </li>
         </ol>
@@ -30,8 +30,8 @@
 
     <!-- Page Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Email Alias</h1>
-        <p class="text-gray-600">Create an alternative email address that forwards to an existing mailbox</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit Email Alias</h1>
+        <p class="text-gray-600">Update settings for {{ $alias->alias_email }}</p>
     </div>
 
     <!-- Form -->
@@ -40,30 +40,22 @@
             <h2 class="text-lg font-semibold text-gray-900">Alias Configuration</h2>
         </div>
         
-        <form action="{{ route('email-alias.store') }}" method="POST" class="p-6">
+        <form action="{{ route('email-alias.update', $alias) }}" method="POST" class="p-6">
             @csrf
+            @method('PUT')
             
             <div class="space-y-6">
                 <div>
-                    <label for="alias" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Alias Email Address
                     </label>
-                    <div class="flex">
-                        <input 
-                            type="text" 
-                            id="alias" 
-                            name="alias" 
-                            class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('alias') border-red-300 @enderror" 
-                            placeholder="contacto"
-                            value="{{ old('alias') }}"
-                            required
-                        >
-                        <span class="bg-gray-50 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 text-gray-500">@devdatep.com</span>
-                    </div>
-                    @error('alias')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    <p class="mt-1 text-sm text-gray-500">Choose a name for your alias email address</p>
+                    <input 
+                        type="text" 
+                        value="{{ $alias->alias_email }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500"
+                        readonly
+                    >
+                    <p class="mt-1 text-sm text-gray-500">Alias email address cannot be changed</p>
                 </div>
 
                 <div>
@@ -77,13 +69,11 @@
                         required
                     >
                         <option value="">Select a mailbox...</option>
-                        @forelse($mailboxes as $mailbox)
-                            <option value="{{ $mailbox->email }}" {{ old('forwards_to') === $mailbox->email ? 'selected' : '' }}>
+                        @foreach($mailboxes as $mailbox)
+                            <option value="{{ $mailbox->email }}" {{ old('forwards_to', $alias->mailbox->email) === $mailbox->email ? 'selected' : '' }}>
                                 {{ $mailbox->email }}
                             </option>
-                        @empty
-                            <option value="" disabled>No active mailboxes available</option>
-                        @endforelse
+                        @endforeach
                     </select>
                     @error('forwards_to')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -98,9 +88,9 @@
                             name="active" 
                             value="1" 
                             class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            {{ old('active', true) ? 'checked' : '' }}
+                            {{ old('active', $alias->active) ? 'checked' : '' }}
                         >
-                        <span class="ml-2 text-sm text-gray-700">Activate alias immediately</span>
+                        <span class="ml-2 text-sm text-gray-700">Alias is active</span>
                     </label>
                 </div>
             </div>
@@ -110,7 +100,7 @@
                     Cancel
                 </a>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors">
-                    Create Alias
+                    Update Alias
                 </button>
             </div>
         </form>

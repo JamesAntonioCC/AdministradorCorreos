@@ -41,12 +41,12 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-900">Active Aliases</h2>
-                    <p class="text-sm text-gray-500">{{ count($aliases ?? []) }} aliases configured</p>
+                    <p class="text-sm text-gray-500">{{ count($aliases) }} aliases configured</p>
                 </div>
-                <button onclick="openCreateAliasModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                <a href="{{ route('email-alias.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
                     <i class="fas fa-plus w-4 h-4"></i>
                     <span>Create alias</span>
-                </button>
+                </a>
             </div>
         </div>
 
@@ -70,33 +70,33 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($aliases ?? [
-                        ['alias' => 'contacto@devdatep.com', 'forwards_to' => 'ventas@devdatep.com', 'status' => 'Active'],
-                        ['alias' => 'admin@devdatep.com', 'forwards_to' => 'gerencia@devdatep.com', 'status' => 'Active'],
-                        ['alias' => 'help@devdatep.com', 'forwards_to' => 'ventas@devdatep.com', 'status' => 'Inactive']
-                    ] as $alias)
+                    @forelse($aliases as $alias)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <span class="text-sm font-medium text-gray-900">{{ $alias['alias'] }}</span>
-                                <button class="ml-2 text-gray-400 hover:text-gray-600">
+                                <span class="text-sm font-medium text-gray-900">{{ $alias->alias_email }}</span>
+                                <button class="ml-2 text-gray-400 hover:text-gray-600" onclick="copyToClipboard('{{ $alias->alias_email }}')">
                                     <i class="fas fa-copy w-4 h-4"></i>
                                 </button>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm text-gray-900">{{ $alias['forwards_to'] }}</span>
+                            <span class="text-sm text-gray-900">{{ $alias->mailbox->email }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="w-2 h-2 {{ $alias['status'] === 'Active' ? 'bg-green-400' : 'bg-red-400' }} rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-900">{{ $alias['status'] }}</span>
+                                <div class="w-2 h-2 {{ $alias->active ? 'bg-green-400' : 'bg-red-400' }} rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-900">{{ $alias->active ? 'Active' : 'Inactive' }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
-                                <button class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                <button class="text-red-600 hover:text-red-900">Delete</button>
+                                <a href="{{ route('email-alias.edit', $alias) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                <form action="{{ route('email-alias.destroy', $alias) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this alias?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -107,6 +107,10 @@
                                 <i class="fas fa-at text-4xl mb-4"></i>
                                 <p class="text-lg font-medium">No aliases configured</p>
                                 <p class="text-sm">Create your first email alias</p>
+                                <a href="{{ route('email-alias.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Create Alias
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -117,55 +121,19 @@
     </div>
 </div>
 
-<!-- Create Alias Modal -->
-<div id="createAliasModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Create Email Alias</h3>
-                <button class="text-gray-400 hover:text-gray-600" onclick="closeAliasModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form action="{{ route('email-alias.store') }}" method="POST">
-                @csrf
-                <div class="mb-4">
-                    <label for="alias" class="block text-sm font-medium text-gray-700 mb-2">Alias Email</label>
-                    <div class="flex">
-                        <input type="text" id="alias" name="alias" class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="alias">
-                        <span class="bg-gray-50 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 text-gray-500">@devdatep.com</span>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <label for="forwards_to" class="block text-sm font-medium text-gray-700 mb-2">Forward To</label>
-                    <select id="forwards_to" name="forwards_to" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">Select mailbox...</option>
-                        <option value="ventas@devdatep.com">ventas@devdatep.com</option>
-                        <option value="reclutamiento@devdatep.com">reclutamiento@devdatep.com</option>
-                        <option value="gerencia@devdatep.com">gerencia@devdatep.com</option>
-                        <option value="ventas_online@devdatep.com">ventas_online@devdatep.com</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeAliasModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
-                        Create Alias
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
+@push('scripts')
 <script>
-function openCreateAliasModal() {
-    document.getElementById('createAliasModal').classList.remove('hidden');
-}
-
-function closeAliasModal() {
-    document.getElementById('createAliasModal').classList.add('hidden');
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show a temporary success message
+        const button = event.target.closest('button');
+        const icon = button.querySelector('i');
+        icon.className = 'fas fa-check w-4 h-4 text-green-500';
+        setTimeout(() => {
+            icon.className = 'fas fa-copy w-4 h-4';
+        }, 2000);
+    });
 }
 </script>
+@endpush
 @endsection

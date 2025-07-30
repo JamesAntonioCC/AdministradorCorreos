@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\EmailAlias;
 use App\Models\Mailbox;
-use Illuminate\Routing\Controller;
 
 class EmailAliasController extends Controller
 {

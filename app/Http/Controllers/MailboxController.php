@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mailbox;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -30,6 +29,13 @@ class MailboxController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             'quota' => 'required|in:1,2,5,10,unlimited',
             'active' => 'boolean'
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.unique' => 'Este correo electrónico ya existe.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'quota.required' => 'La cuota de almacenamiento es obligatoria.',
         ]);
 
         // Agregar el dominio al email
@@ -44,7 +50,7 @@ class MailboxController extends Controller
         ]);
 
         return redirect()->route('mailboxes.index')
-            ->with('success', 'Mailbox created successfully!');
+            ->with('success', '¡Buzón creado exitosamente!');
     }
 
     public function show(Mailbox $mailbox)
@@ -62,6 +68,8 @@ class MailboxController extends Controller
         $validated = $request->validate([
             'quota' => 'required|in:1,2,5,10,unlimited',
             'active' => 'boolean'
+        ], [
+            'quota.required' => 'La cuota de almacenamiento es obligatoria.',
         ]);
 
         $mailbox->update([
@@ -70,32 +78,43 @@ class MailboxController extends Controller
         ]);
 
         return redirect()->route('mailboxes.index')
-            ->with('success', 'Mailbox updated successfully!');
+            ->with('success', '¡Buzón actualizado exitosamente!');
     }
 
     public function destroy(Mailbox $mailbox)
     {
-        // Eliminar alias y forwarders relacionados
-        $mailbox->aliases()->delete();
-        $mailbox->forwardersAsSource()->delete();
-        $mailbox->forwardersAsDestination()->delete();
-        
-        $mailbox->delete();
+        try {
+            // Eliminar alias y forwarders relacionados (soft delete también)
+            $mailbox->aliases()->delete();
+            $mailbox->forwardersAsSource()->delete();
+            $mailbox->forwardersAsDestination()->delete();
+            $mailbox->autoReplies()->delete();
+            
+            // Soft delete del mailbox
+            $mailbox->delete();
 
-        return redirect()->route('mailboxes.index')
-            ->with('success', 'Mailbox deleted successfully!');
+            return redirect()->route('mailboxes.index')
+                ->with('success', '¡Buzón eliminado exitosamente!');
+        } catch (\Exception $e) {
+            return redirect()->route('mailboxes.index')
+                ->with('error', 'Error al eliminar el buzón: ' . $e->getMessage());
+        }
     }
 
     public function changePassword(Request $request, Mailbox $mailbox)
     {
         $validated = $request->validate([
             'password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
         $mailbox->update([
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('success', 'Password changed successfully!');
+        return back()->with('success', '¡Contraseña cambiada exitosamente!');
     }
 }

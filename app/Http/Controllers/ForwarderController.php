@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Forwarder;
 use App\Models\Mailbox;
-use Illuminate\Routing\Controller;
 
 class ForwarderController extends Controller
 {
@@ -26,32 +25,42 @@ class ForwarderController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'source' => 'required|string|max:255',
+        $request->validate([
+            'source_type' => 'required|in:existing,new',
             'destination' => 'required|email|max:255',
             'active' => 'boolean'
         ]);
 
-        // Agregar el dominio al email fuente
-        $sourceEmail = $validated['source'] . '@devdatep.com';
-
-        // Verificar que el email fuente no exista como mailbox
-        if (Mailbox::where('email', $sourceEmail)->exists()) {
-            return back()->withErrors([
-                'source' => 'This email address already exists as a mailbox.'
-            ])->withInput();
+        if ($request->source_type === 'existing') {
+            $request->validate([
+                'existing_mailbox' => 'required|exists:mailboxes,email'
+            ]);
+            $sourceEmail = $request->existing_mailbox;
+        } else {
+            $request->validate([
+                'source' => 'required|string|max:255'
+            ]);
+            $sourceEmail = $request->source . '@devdatep.com';
+            
+            // Verificar que el email fuente no exista como mailbox
+            if (Mailbox::where('email', $sourceEmail)->exists()) {
+                return back()->withErrors([
+                    'source' => 'This email address already exists as a mailbox.'
+                ])->withInput();
+            }
         }
 
         // Verificar que no exista ya un forwarder con la misma fuente
         if (Forwarder::where('source_email', $sourceEmail)->exists()) {
             return back()->withErrors([
-                'source' => 'A forwarder for this email address already exists.'
+                'source' => 'A forwarder for this email address already exists.',
+                'existing_mailbox' => 'A forwarder for this email address already exists.'
             ])->withInput();
         }
 
         Forwarder::create([
             'source_email' => $sourceEmail,
-            'destination_email' => $validated['destination'],
+            'destination_email' => $request->destination,
             'active' => $request->has('active'),
         ]);
 

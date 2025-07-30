@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\Mailbox;
 use App\Models\Forwarder;
 use App\Models\EmailAlias;
-use Illuminate\Routing\Controller;
+use App\Models\VirusScan;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Obtener estadísticas para el dashboard
+        // Obtener estadísticas reales de la base de datos
         $stats = [
             'total_mailboxes' => Mailbox::count(),
             'active_mailboxes' => Mailbox::where('active', true)->count(),
@@ -20,18 +20,29 @@ class DashboardController extends Controller
             'storage_used' => $this->calculateStorageUsed(),
         ];
 
-        // Obtener buzones recientes
+        // Estadísticas de seguridad
+        $securityStats = [
+            'total_scans' => VirusScan::count(),
+            'threats_detected' => VirusScan::threatDetected()->count(),
+            'threats_today' => VirusScan::threatDetected()->today()->count(),
+            'quarantined' => VirusScan::quarantined()->count(),
+        ];
+
+        // Obtener buzones recientes REALES de la base de datos
         $recentMailboxes = Mailbox::latest()
             ->take(3)
-            ->get()
-            ->map(function ($mailbox) {
-                return [
-                    'email' => $mailbox->email,
-                    'created' => $mailbox->created_at->diffForHumans(),
-                ];
-            });
+            ->get();
 
-        return view('dashboard', compact('stats', 'recentMailboxes'));
+        // Obtener amenazas recientes
+        $recentThreats = VirusScan::threatDetected()
+            ->latest('scanned_at')
+            ->take(5)
+            ->get();
+
+        // Simular algunos escaneos para demo (remover en producción)
+        $this->simulateScansForDemo();
+
+        return view('dashboard', compact('stats', 'securityStats', 'recentMailboxes', 'recentThreats'));
     }
 
     private function calculateStorageUsed()
@@ -51,5 +62,31 @@ class DashboardController extends Controller
         }
 
         return round($bytes, $precision) . ' ' . $units[$i];
+    }
+
+    private function simulateScansForDemo()
+    {
+        // Solo simular si no hay datos de escaneo
+        if (VirusScan::count() < 10) {
+            $mailboxes = Mailbox::pluck('email')->toArray();
+            $externalEmails = [
+                'usuario@gmail.com',
+                'contacto@ejemplo.com',
+                'spam@sospechoso.com',
+                'phishing@banco-falso.com',
+                'malware@infectado.net'
+            ];
+
+            for ($i = 0; $i < 15; $i++) {
+                $sender = $externalEmails[array_rand($externalEmails)];
+                $recipient = $mailboxes[array_rand($mailboxes)] ?? 'test@devdatep.com';
+                
+                \App\Http\Controllers\VirusScanController::simulateScan(
+                    $sender,
+                    $recipient,
+                    'Correo de Prueba ' . ($i + 1)
+                );
+            }
+        }
     }
 }

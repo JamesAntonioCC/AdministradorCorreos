@@ -45,25 +45,61 @@
             
             <div class="space-y-6">
                 <div>
-                    <label for="source" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Source Email Address
                     </label>
-                    <div class="flex">
-                        <input 
-                            type="text" 
-                            id="source" 
-                            name="source" 
-                            class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('source') border-red-300 @enderror" 
-                            placeholder="info"
-                            value="{{ old('source') }}"
-                            required
-                        >
-                        <span class="bg-gray-50 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 text-gray-500">@devdatep.com</span>
+                    
+                    <!-- Radio buttons for source type -->
+                    <div class="mb-4 space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="source_type" value="existing" class="text-indigo-600" checked onchange="toggleSourceType()">
+                            <span class="ml-2 text-sm text-gray-700">Use existing mailbox</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="source_type" value="new" class="text-indigo-600" onchange="toggleSourceType()">
+                            <span class="ml-2 text-sm text-gray-700">Create new email address</span>
+                        </label>
                     </div>
+
+                    <!-- Existing mailbox selector -->
+                    <div id="existingMailboxSelect" class="mb-4">
+                        <select 
+                            id="existing_mailbox" 
+                            name="existing_mailbox" 
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="">Select an existing mailbox...</option>
+                            @foreach($mailboxes as $mailbox)
+                                <option value="{{ $mailbox->email }}" {{ old('existing_mailbox') === $mailbox->email ? 'selected' : '' }}>
+                                    {{ $mailbox->email }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-sm text-gray-500">Select a mailbox to forward from</p>
+                    </div>
+
+                    <!-- New email input -->
+                    <div id="newEmailInput" class="mb-4 hidden">
+                        <div class="flex">
+                            <input 
+                                type="text" 
+                                id="source" 
+                                name="source" 
+                                class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('source') border-red-300 @enderror" 
+                                placeholder="info"
+                                value="{{ old('source') }}"
+                            >
+                            <span class="bg-gray-50 border border-l-0 border-gray-300 rounded-r-md px-3 py-2 text-gray-500">@devdatep.com</span>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Create a new email address for forwarding</p>
+                    </div>
+
                     @error('source')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-sm text-gray-500">Emails sent to this address will be forwarded</p>
+                    @error('existing_mailbox')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -110,4 +146,27 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function toggleSourceType() {
+    const existingRadio = document.querySelector('input[name="source_type"][value="existing"]');
+    const newRadio = document.querySelector('input[name="source_type"][value="new"]');
+    const existingSelect = document.getElementById('existingMailboxSelect');
+    const newInput = document.getElementById('newEmailInput');
+    
+    if (existingRadio.checked) {
+        existingSelect.classList.remove('hidden');
+        newInput.classList.add('hidden');
+        document.getElementById('existing_mailbox').required = true;
+        document.getElementById('source').required = false;
+    } else {
+        existingSelect.classList.add('hidden');
+        newInput.classList.remove('hidden');
+        document.getElementById('existing_mailbox').required = false;
+        document.getElementById('source').required = true;
+    }
+}
+</script>
+@endpush
 @endsection
