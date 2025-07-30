@@ -11,12 +11,6 @@ use App\Http\Controllers\EmailImportController;
 use App\Http\Controllers\VirusScanController;
 use App\Http\Controllers\Auth\LoginController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -78,11 +72,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [EmailLogsController::class, 'index'])->name('index');
     });
 
-    // Virus Scan
+    // Virus Scan - RUTAS CORREGIDAS Y AMPLIADAS
     Route::prefix('virus-scan')->name('virus-scan.')->group(function () {
         Route::get('/', [VirusScanController::class, 'index'])->name('index');
-        Route::post('/{virusScan}/quarantine', [VirusScanController::class, 'quarantine'])->name('quarantine');
+        Route::get('/{virusScan}', [VirusScanController::class, 'show'])->name('show'); // NUEVA RUTA
+        Route::get('/quarantine', [VirusScanController::class, 'quarantine'])->name('quarantine');
+        Route::get('/quarantine/{virusScan}', [VirusScanController::class, 'showQuarantine'])->name('quarantine.show'); // NUEVA RUTA
+        Route::post('/{virusScan}/put-in-quarantine', [VirusScanController::class, 'putInQuarantine'])->name('put-in-quarantine');
         Route::post('/{virusScan}/release', [VirusScanController::class, 'release'])->name('release');
+        Route::delete('/{virusScan}', [VirusScanController::class, 'delete'])->name('delete');
     });
 
     // Email Import

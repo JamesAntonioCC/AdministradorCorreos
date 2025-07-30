@@ -10,10 +10,7 @@ class ForwarderController extends Controller
 {
     public function index()
     {
-        $forwarders = Forwarder::with(['sourceMailbox', 'destinationMailbox'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+        $forwarders = Forwarder::orderBy('created_at', 'desc')->get();
         return view('forwarders.index', compact('forwarders'));
     }
 
@@ -40,12 +37,12 @@ class ForwarderController extends Controller
             $request->validate([
                 'source' => 'required|string|max:255'
             ]);
-            $sourceEmail = $request->source . '@devdatep.com';
+            $sourceEmail = $request->source . '@equipo1.com';
             
             // Verificar que el email fuente no exista como mailbox
             if (Mailbox::where('email', $sourceEmail)->exists()) {
                 return back()->withErrors([
-                    'source' => 'This email address already exists as a mailbox.'
+                    'source' => 'Esta dirección de correo ya existe como buzón.'
                 ])->withInput();
             }
         }
@@ -53,8 +50,8 @@ class ForwarderController extends Controller
         // Verificar que no exista ya un forwarder con la misma fuente
         if (Forwarder::where('source_email', $sourceEmail)->exists()) {
             return back()->withErrors([
-                'source' => 'A forwarder for this email address already exists.',
-                'existing_mailbox' => 'A forwarder for this email address already exists.'
+                'source' => 'Ya existe un reenvío para esta dirección de correo.',
+                'existing_mailbox' => 'Ya existe un reenvío para esta dirección de correo.'
             ])->withInput();
         }
 
@@ -65,7 +62,7 @@ class ForwarderController extends Controller
         ]);
 
         return redirect()->route('forwarders.index')
-            ->with('success', 'Forwarder created successfully!');
+            ->with('success', '¡Reenvío creado exitosamente!');
     }
 
     public function edit(Forwarder $forwarder)
@@ -87,7 +84,7 @@ class ForwarderController extends Controller
         ]);
 
         return redirect()->route('forwarders.index')
-            ->with('success', 'Forwarder updated successfully!');
+            ->with('success', '¡Reenvío actualizado exitosamente!');
     }
 
     public function destroy(Forwarder $forwarder)
@@ -95,6 +92,6 @@ class ForwarderController extends Controller
         $forwarder->delete();
 
         return redirect()->route('forwarders.index')
-            ->with('success', 'Forwarder deleted successfully!');
+            ->with('success', '¡Reenvío eliminado exitosamente!');
     }
 }

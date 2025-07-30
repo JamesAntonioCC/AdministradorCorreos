@@ -13,7 +13,7 @@ class EmailLogsController extends Controller
             [
                 'id' => 1,
                 'timestamp' => now()->subMinutes(5),
-                'from' => 'ventas@devdatep.com',
+                'from' => 'ventas@equipo1.com',
                 'to' => 'cliente@example.com',
                 'subject' => 'Propuesta comercial',
                 'status' => 'delivered',
@@ -23,7 +23,7 @@ class EmailLogsController extends Controller
                 'id' => 2,
                 'timestamp' => now()->subMinutes(15),
                 'from' => 'info@example.com',
-                'to' => 'reclutamiento@devdatep.com',
+                'to' => 'reclutamiento@equipo1.com',
                 'subject' => 'Consulta sobre servicios',
                 'status' => 'received',
                 'size' => '1.8 KB'
@@ -31,8 +31,8 @@ class EmailLogsController extends Controller
             [
                 'id' => 3,
                 'timestamp' => now()->subHour(),
-                'from' => 'gerencia@devdatep.com',
-                'to' => 'equipo@devdatep.com',
+                'from' => 'gerencia@equipo1.com',
+                'to' => 'equipo@equipo1.com',
                 'subject' => 'Reunión semanal',
                 'status' => 'failed',
                 'size' => '3.1 KB'

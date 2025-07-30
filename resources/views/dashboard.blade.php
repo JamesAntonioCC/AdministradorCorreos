@@ -119,7 +119,10 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Detección de Amenazas (Últimos 7 días)</h3>
             </div>
-            <canvas id="threatChart" width="400" height="200"></canvas>
+            <!-- CONTENEDOR CON ALTURA FIJA -->
+            <div class="relative h-64 w-full">
+                <canvas id="threatChart"></canvas>
+            </div>
         </div>
 
         <!-- Threat Types Distribution -->
@@ -127,7 +130,10 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Tipos de Amenazas</h3>
             </div>
-            <canvas id="threatTypesChart" width="400" height="200"></canvas>
+            <!-- CONTENEDOR CON ALTURA FIJA -->
+            <div class="relative h-64 w-full">
+                <canvas id="threatTypesChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -263,71 +269,77 @@
 
 @push('scripts')
 <script>
-// Threat Detection Chart (Line Chart)
-const threatCtx = document.getElementById('threatChart').getContext('2d');
-const threatChart = new Chart(threatCtx, {
-    type: 'line',
-    data: {
-        labels: ['Hace 7 días', 'Hace 6 días', 'Hace 5 días', 'Hace 4 días', 'Hace 3 días', 'Hace 2 días', 'Ayer'],
-        datasets: [{
-            label: 'Amenazas Detectadas',
-            data: [2, 5, 3, 8, 4, 6, 3],
-            borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            tension: 0.4,
-            fill: true
-        }, {
-            label: 'Correos Limpios',
-            data: [45, 52, 48, 61, 55, 67, 58],
-            borderColor: 'rgb(34, 197, 94)',
-            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
+document.addEventListener('DOMContentLoaded', function() {
+    // Threat Detection Chart (Line Chart)
+    const threatCtx = document.getElementById('threatChart');
+    if (threatCtx) {
+        const threatChart = new Chart(threatCtx, {
+            type: 'line',
+            data: {
+                labels: ['Hace 7 días', 'Hace 6 días', 'Hace 5 días', 'Hace 4 días', 'Hace 3 días', 'Hace 2 días', 'Ayer'],
+                datasets: [{
+                    label: 'Amenazas Detectadas',
+                    data: [2, 5, 3, 8, 4, 6, 3],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Correos Limpios',
+                    data: [45, 52, 48, 61, 55, 67, 58],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
             }
-        },
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
+        });
     }
-});
 
-// Threat Types Chart (Doughnut Chart)
-const threatTypesCtx = document.getElementById('threatTypesChart').getContext('2d');
-const threatTypesChart = new Chart(threatTypesCtx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Spam', 'Virus', 'Malware', 'Phishing', 'Enlaces Sospechosos'],
-        datasets: [{
-            data: [45, 12, 8, 15, 20],
-            backgroundColor: [
-                '#FCD34D',
-                '#EF4444',
-                '#8B5CF6',
-                '#F97316',
-                '#06B6D4'
-            ],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
+    // Threat Types Chart (Doughnut Chart)
+    const threatTypesCtx = document.getElementById('threatTypesChart');
+    if (threatTypesCtx) {
+        const threatTypesChart = new Chart(threatTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Spam', 'Virus', 'Malware', 'Phishing', 'Enlaces Sospechosos'],
+                datasets: [{
+                    data: [45, 12, 8, 15, 20],
+                    backgroundColor: [
+                        '#FCD34D',
+                        '#EF4444',
+                        '#8B5CF6',
+                        '#F97316',
+                        '#06B6D4'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
             }
-        }
+        });
     }
 });
 </script>

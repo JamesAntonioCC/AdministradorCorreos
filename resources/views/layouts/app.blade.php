@@ -118,6 +118,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('virus-scan.quarantine') }}" class="sidebar-item {{ request()->routeIs('virus-scan.quarantine') ? 'active' : '' }} flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-lock w-5 h-5 mr-3 {{ request()->routeIs('virus-scan.quarantine') ? 'text-indigo-600' : '' }}"></i>
+                            Cuarentena
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('email-import.index') }}" class="sidebar-item {{ request()->routeIs('email-import.*') ? 'active' : '' }} flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50">
                             <i class="fas fa-download w-5 h-5 mr-3 {{ request()->routeIs('email-import.*') ? 'text-indigo-600' : '' }}"></i>
                             Importar Correos
@@ -159,6 +165,31 @@
         </main>
     </div>
 
+    <!-- Modal para ver detalles del virus scan -->
+    <div id="virusScanModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Detalles del Análisis</h3>
+                    <button onclick="closeVirusScanModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="modalContent" class="space-y-4">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeVirusScanModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Cerrar
+                    </button>
+                    <button id="quarantineBtn" onclick="quarantineEmail()" class="hidden px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Poner en Cuarentena
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleUserMenu() {
             document.getElementById('userMenu').classList.toggle('hidden');
@@ -169,10 +200,82 @@
             const userMenu = document.getElementById('userMenu');
             const userButton = event.target.closest('button');
             
-            if (!userButton || userButton.onclick !== toggleUserMenu) {
+            if (!userButton || !userButton.onclick || userButton.onclick.toString().indexOf('toggleUserMenu') === -1) {
                 userMenu.classList.add('hidden');
             }
         });
+
+        // Virus scan modal functions
+        let currentScanId = null;
+
+        function showVirusScanDetails(scanId, senderEmail, recipientEmail, subject, scanResult, threatName, scannedAt) {
+            currentScanId = scanId;
+            document.getElementById('modalTitle').textContent = 'Detalles del Análisis de Virus';
+            
+            const content = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Remitente</label>
+                        <p class="mt-1 text-sm text-gray-900">${senderEmail}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Destinatario</label>
+                        <p class="mt-1 text-sm text-gray-900">${recipientEmail}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Asunto</label>
+                        <p class="mt-1 text-sm text-gray-900">${subject}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Resultado</label>
+                        <p class="mt-1 text-sm text-gray-900">${scanResult}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Amenaza</label>
+                        <p class="mt-1 text-sm text-gray-900">${threatName || 'Ninguna'}</p>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Fecha de Análisis</label>
+                        <p class="mt-1 text-sm text-gray-900">${scannedAt}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = content;
+            
+            // Show quarantine button if threat detected
+            const quarantineBtn = document.getElementById('quarantineBtn');
+            if (scanResult !== 'Limpio') {
+                quarantineBtn.classList.remove('hidden');
+            } else {
+                quarantineBtn.classList.add('hidden');
+            }
+            
+            document.getElementById('virusScanModal').classList.remove('hidden');
+        }
+
+        function closeVirusScanModal() {
+            document.getElementById('virusScanModal').classList.add('hidden');
+            currentScanId = null;
+        }
+
+        function quarantineEmail() {
+            if (currentScanId) {
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/virus-scan/${currentScanId}/quarantine`;
+                
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                
+                form.appendChild(csrfToken);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
 
     @stack('scripts')

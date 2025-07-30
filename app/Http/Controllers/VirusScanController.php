@@ -2,107 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\VirusScan;
+use Illuminate\Http\Request;
 
 class VirusScanController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = VirusScan::query();
-
-        // Filtros
-        if ($request->filled('scan_result')) {
-            $query->where('scan_result', $request->scan_result);
-        }
-
-        if ($request->filled('threat_type')) {
-            $query->where('threat_type', $request->threat_type);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('sender_email', 'like', "%{$search}%")
-                  ->orWhere('recipient_email', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%")
-                  ->orWhere('threat_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('scanned_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('scanned_at', '<=', $request->date_to);
-        }
-
-        $scans = $query->orderBy('scanned_at', 'desc')->paginate(20);
-
-        // Estadísticas
+        $scans = VirusScan::latest('scanned_at')->paginate(20);
+        
         $stats = [
-            'total_scans' => VirusScan::count(),
-            'threats_detected' => VirusScan::threatDetected()->count(),
-            'quarantined' => VirusScan::quarantined()->count(),
-            'today_scans' => VirusScan::today()->count(),
+            'clean_emails' => VirusScan::where('scan_result', 'clean')->count(),
+            'threats_detected' => VirusScan::where('scan_result', '!=', 'clean')->count(),
+            'quarantined' => VirusScan::where('quarantined', true)->count(),
+            'scans_today' => VirusScan::whereDate('scanned_at', today())->count(),
         ];
 
         return view('virus-scan.index', compact('scans', 'stats'));
     }
 
-    public function quarantine(VirusScan $virusScan)
+    // NUEVO MÉTODO PARA MOSTRAR DETALLES DE UN ANÁLISIS
+    public function show(VirusScan $virusScan)
+    {
+        return view('virus-scan.show', compact('virusScan'));
+    }
+
+    public function quarantine()
+    {
+        $quarantinedEmails = VirusScan::where('quarantined', true)
+            ->latest('scanned_at')
+            ->paginate(20);
+        
+        $stats = [
+            'total_quarantined' => VirusScan::where('quarantined', true)->count(),
+            'today_quarantined' => VirusScan::where('quarantined', true)
+                ->whereDate('scanned_at', today())->count(),
+            'released' => VirusScan::where('quarantined', false)
+                ->where('scan_result', '!=', 'clean')->count(),
+        ];
+
+        return view('virus-scan.quarantine', compact('quarantinedEmails', 'stats'));
+    }
+
+    // NUEVO MÉTODO PARA MOSTRAR DETALLES DE UN CORREO EN CUARENTENA
+    public function showQuarantine(VirusScan $virusScan)
+    {
+        // Verificar que el correo esté en cuarentena
+        if (!$virusScan->quarantined) {
+            return redirect()->route('virus-scan.quarantine')
+                ->with('error', 'Este correo no está en cuarentena.');
+        }
+
+        return view('virus-scan.quarantine-show', compact('virusScan'));
+    }
+
+    public function putInQuarantine(VirusScan $virusScan)
     {
         $virusScan->update(['quarantined' => true]);
         
-        return back()->with('success', '¡Correo puesto en cuarentena exitosamente!');
+        return redirect()->back()->with('success', 'Correo puesto en cuarentena exitosamente.');
     }
 
     public function release(VirusScan $virusScan)
     {
         $virusScan->update(['quarantined' => false]);
         
-        return back()->with('success', '¡Correo liberado de cuarentena!');
+        return redirect()->back()->with('success', 'Correo liberado de cuarentena exitosamente.');
     }
 
-    // Simular escaneo de virus (en producción esto sería un job/queue)
-    public static function simulateScan($senderEmail, $recipientEmail, $subject = null)
+    public function delete(VirusScan $virusScan)
     {
-        // Simular diferentes tipos de amenazas
-        $threats = [
-            ['type' => 'virus', 'name' => 'Win32.Trojan.Generic', 'probability' => 0.05],
-            ['type' => 'malware', 'name' => 'Adware.Generic', 'probability' => 0.03],
-            ['type' => 'phishing', 'name' => 'Phishing.Banking', 'probability' => 0.02],
-            ['type' => 'suspicious_link', 'name' => 'Enlace.Sospechoso', 'probability' => 0.08],
-            ['type' => 'spam', 'name' => 'Spam.Generic', 'probability' => 0.15],
-        ];
-
-        $scanResult = 'clean';
-        $threatType = null;
-        $threatName = null;
-        $quarantined = false;
-
-        // Simular detección de amenazas
-        foreach ($threats as $threat) {
-            if (rand(1, 100) <= ($threat['probability'] * 100)) {
-                $scanResult = 'threat_detected';
-                $threatType = $threat['type'];
-                $threatName = $threat['name'];
-                $quarantined = in_array($threat['type'], ['virus', 'malware', 'phishing']);
-                break;
-            }
-        }
-
-        return VirusScan::create([
-            'email_id' => 'email_' . uniqid(),
-            'sender_email' => $senderEmail,
-            'recipient_email' => $recipientEmail,
-            'subject' => $subject,
-            'scan_result' => $scanResult,
-            'threat_type' => $threatType,
-            'threat_name' => $threatName,
-            'quarantined' => $quarantined,
-            'scanned_at' => now(),
-        ]);
+        $virusScan->delete();
+        
+        return redirect()->back()->with('success', 'Correo eliminado permanentemente.');
     }
 }

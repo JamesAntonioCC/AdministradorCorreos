@@ -2,55 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Mailbox;
-use App\Models\Forwarder;
 use App\Models\EmailAlias;
+use App\Models\Forwarder;
 use App\Models\VirusScan;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Obtener estadísticas reales de la base de datos
+        // Estadísticas generales
         $stats = [
             'total_mailboxes' => Mailbox::count(),
             'active_mailboxes' => Mailbox::where('active', true)->count(),
             'forwarders' => Forwarder::count(),
-            'storage_used' => $this->calculateStorageUsed(),
+            'storage_used' => $this->formatBytes($this->getTotalStorageUsed()),
         ];
 
-        // Estadísticas de seguridad
+        // Estadísticas de seguridad - ESTA VARIABLE FALTABA
         $securityStats = [
             'total_scans' => VirusScan::count(),
-            'threats_detected' => VirusScan::threatDetected()->count(),
-            'threats_today' => VirusScan::threatDetected()->today()->count(),
-            'quarantined' => VirusScan::quarantined()->count(),
+            'threats_detected' => VirusScan::where('scan_result', '!=', 'clean')->count(),
+            'threats_today' => VirusScan::where('scan_result', '!=', 'clean')
+                ->whereDate('scanned_at', today())->count(),
+            'quarantined' => VirusScan::where('quarantined', true)->count(),
         ];
 
-        // Obtener buzones recientes REALES de la base de datos
+        // Buzones recientes - CAMBIAR NOMBRE DE VARIABLE
         $recentMailboxes = Mailbox::latest()
-            ->take(3)
-            ->get();
-
-        // Obtener amenazas recientes
-        $recentThreats = VirusScan::threatDetected()
-            ->latest('scanned_at')
             ->take(5)
             ->get();
 
-        // Simular algunos escaneos para demo (remover en producción)
-        $this->simulateScansForDemo();
+        // Amenazas recientes - CAMBIAR NOMBRE Y AGREGAR PROCESAMIENTO
+        $recentThreats = VirusScan::where('scan_result', '!=', 'clean')
+            ->latest('scanned_at')
+            ->take(5)
+            ->get()
+            ->map(function ($threat) {
+                $threat->threat_type_icon = $this->getThreatIcon($threat->scan_result);
+                $threat->scan_result_badge = $this->getScanResultBadge($threat->scan_result);
+                $threat->threat_name = $this->getThreatName($threat->scan_result);
+                return $threat;
+            });
 
         return view('dashboard', compact('stats', 'securityStats', 'recentMailboxes', 'recentThreats'));
     }
 
-    private function calculateStorageUsed()
+    private function getTotalStorageUsed()
     {
-        // Aquí puedes implementar la lógica real para calcular el almacenamiento usado
-        // Por ahora retornamos un valor de ejemplo
-        $totalUsed = Mailbox::sum('storage_used') ?? 0;
-        return $this->formatBytes($totalUsed);
+        // Simular cálculo de almacenamiento usado
+        return Mailbox::sum('storage_used') ?? 0;
     }
 
     private function formatBytes($bytes, $precision = 2)
@@ -64,29 +66,46 @@ class DashboardController extends Controller
         return round($bytes, $precision) . ' ' . $units[$i];
     }
 
-    private function simulateScansForDemo()
+    private function getThreatIcon($scanResult)
     {
-        // Solo simular si no hay datos de escaneo
-        if (VirusScan::count() < 10) {
-            $mailboxes = Mailbox::pluck('email')->toArray();
-            $externalEmails = [
-                'usuario@gmail.com',
-                'contacto@ejemplo.com',
-                'spam@sospechoso.com',
-                'phishing@banco-falso.com',
-                'malware@infectado.net'
-            ];
+        $icons = [
+            'spam' => 'fas fa-envelope-open-text',
+            'virus' => 'fas fa-bug',
+            'malware' => 'fas fa-skull-crossbones',
+            'phishing' => 'fas fa-fish',
+            'suspicious' => 'fas fa-exclamation-triangle',
+            'threat_detected' => 'fas fa-exclamation-triangle',
+        ];
 
-            for ($i = 0; $i < 15; $i++) {
-                $sender = $externalEmails[array_rand($externalEmails)];
-                $recipient = $mailboxes[array_rand($mailboxes)] ?? 'test@devdatep.com';
-                
-                \App\Http\Controllers\VirusScanController::simulateScan(
-                    $sender,
-                    $recipient,
-                    'Correo de Prueba ' . ($i + 1)
-                );
-            }
-        }
+        return $icons[$scanResult] ?? 'fas fa-exclamation-triangle';
+    }
+
+    private function getScanResultBadge($scanResult)
+    {
+        $badges = [
+            'clean' => 'bg-green-100 text-green-800',
+            'spam' => 'bg-yellow-100 text-yellow-800',
+            'virus' => 'bg-red-100 text-red-800',
+            'malware' => 'bg-red-100 text-red-800',
+            'phishing' => 'bg-orange-100 text-orange-800',
+            'suspicious' => 'bg-yellow-100 text-yellow-800',
+            'threat_detected' => 'bg-red-100 text-red-800',
+        ];
+
+        return $badges[$scanResult] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    private function getThreatName($scanResult)
+    {
+        $names = [
+            'spam' => 'Spam Detectado',
+            'virus' => 'Virus Detectado',
+            'malware' => 'Malware Detectado',
+            'phishing' => 'Phishing Detectado',
+            'suspicious' => 'Contenido Sospechoso',
+            'threat_detected' => 'Amenaza Detectada',
+        ];
+
+        return $names[$scanResult] ?? 'Amenaza Desconocida';
     }
 }

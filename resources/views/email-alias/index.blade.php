@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Email Alias - Administración de Correos')
+@section('title', 'Alias de Correo - Administración de Correos')
 
 @section('content')
 <div class="max-w-7xl mx-auto">
@@ -10,19 +10,19 @@
             <li class="inline-flex items-center">
                 <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600">
                     <i class="fas fa-home w-4 h-4 mr-2"></i>
-                    Home
+                    Inicio
                 </a>
             </li>
             <li>
                 <div class="flex items-center">
                     <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-500">Emails</span>
+                    <span class="text-sm font-medium text-gray-500">Correos</span>
                 </div>
             </li>
             <li aria-current="page">
                 <div class="flex items-center">
                     <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-900">Email Alias</span>
+                    <span class="text-sm font-medium text-gray-900">Alias de Correo</span>
                 </div>
             </li>
         </ol>
@@ -30,8 +30,8 @@
 
     <!-- Page Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Email Alias</h1>
-        <p class="text-gray-600">Create alternative email addresses that forward to existing mailboxes</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Alias de Correo</h1>
+        <p class="text-gray-600">Crea direcciones de correo alternativas que reenvían a buzones existentes</p>
     </div>
 
     <!-- Email Alias Section -->
@@ -40,12 +40,12 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900">Active Aliases</h2>
-                    <p class="text-sm text-gray-500">{{ count($aliases) }} aliases configured</p>
+                    <h2 class="text-lg font-semibold text-gray-900">Alias Activos</h2>
+                    <p class="text-sm text-gray-500">{{ count($aliases) }} alias configurados</p>
                 </div>
                 <a href="{{ route('email-alias.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
                     <i class="fas fa-plus w-4 h-4"></i>
-                    <span>Create alias</span>
+                    <span>Crear alias</span>
                 </a>
             </div>
         </div>
@@ -56,16 +56,16 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Alias Email
+                            Correo Alias
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Forwards To
+                            Reenvía A
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
+                            Estado
                         </th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
+                            Acciones
                         </th>
                     </tr>
                 </thead>
@@ -86,16 +86,16 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-2 h-2 {{ $alias->active ? 'bg-green-400' : 'bg-red-400' }} rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-900">{{ $alias->active ? 'Active' : 'Inactive' }}</span>
+                                <span class="text-sm text-gray-900">{{ $alias->active ? 'Activo' : 'Inactivo' }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
-                                <a href="{{ route('email-alias.edit', $alias) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                <form action="{{ route('email-alias.destroy', $alias) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this alias?')">
+                                <a href="{{ route('email-alias.edit', $alias) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                                <form action="{{ route('email-alias.destroy', $alias) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este alias?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
                                 </form>
                             </div>
                         </td>
@@ -105,11 +105,11 @@
                         <td colspan="4" class="px-6 py-12 text-center">
                             <div class="text-gray-500">
                                 <i class="fas fa-at text-4xl mb-4"></i>
-                                <p class="text-lg font-medium">No aliases configured</p>
-                                <p class="text-sm">Create your first email alias</p>
+                                <p class="text-lg font-medium">No hay alias configurados</p>
+                                <p class="text-sm">Crea tu primer alias de correo</p>
                                 <a href="{{ route('email-alias.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Create Alias
+                                    Crear Alias
                                 </a>
                             </div>
                         </td>

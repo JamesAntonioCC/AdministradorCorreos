@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Auto-Reply - Administración de Correos')
+@section('title', 'Editar Respuesta Automática - Administración de Correos')
 
 @section('content')
 <div class="max-w-2xl mx-auto">
@@ -10,19 +10,19 @@
             <li class="inline-flex items-center">
                 <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600">
                     <i class="fas fa-home w-4 h-4 mr-2"></i>
-                    Home
+                    Inicio
                 </a>
             </li>
             <li>
                 <div class="flex items-center">
                     <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-2"></i>
-                    <a href="{{ route('auto-reply.index') }}" class="text-sm font-medium text-gray-500 hover:text-indigo-600">Automatic Reply</a>
+                    <a href="{{ route('auto-reply.index') }}" class="text-sm font-medium text-gray-500 hover:text-indigo-600">Respuesta Automática</a>
                 </div>
             </li>
             <li aria-current="page">
                 <div class="flex items-center">
                     <i class="fas fa-chevron-right w-4 h-4 text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-900">Edit</span>
+                    <span class="text-sm font-medium text-gray-900">Editar</span>
                 </div>
             </li>
         </ol>
@@ -30,14 +30,14 @@
 
     <!-- Page Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Edit Automatic Reply</h1>
-        <p class="text-gray-600">Update auto-reply settings for {{ $autoReply->mailbox->email }}</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Editar Respuesta Automática</h1>
+        <p class="text-gray-600">Actualizar configuración de respuesta automática para {{ $autoReply->mailbox->email }}</p>
     </div>
 
     <!-- Form -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">Auto-Reply Configuration</h2>
+            <h2 class="text-lg font-semibold text-gray-900">Configuración de Respuesta Automática</h2>
         </div>
         
         <form action="{{ route('auto-reply.update', $autoReply) }}" method="POST" class="p-6">
@@ -47,7 +47,7 @@
             <div class="space-y-6">
                 <div>
                     <label for="mailbox_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Mailbox
+                        Buzón
                     </label>
                     <select 
                         id="mailbox_id" 
@@ -55,7 +55,7 @@
                         class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('mailbox_id') border-red-300 @enderror"
                         required
                     >
-                        <option value="">Select a mailbox...</option>
+                        <option value="">Selecciona un buzón...</option>
                         @foreach($mailboxes as $mailbox)
                             <option value="{{ $mailbox->id }}" {{ old('mailbox_id', $autoReply->mailbox_id) == $mailbox->id ? 'selected' : '' }}>
                                 {{ $mailbox->email }}
@@ -69,7 +69,7 @@
 
                 <div>
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                        Subject
+                        Asunto
                     </label>
                     <input 
                         type="text" 
@@ -86,7 +86,7 @@
 
                 <div>
                     <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
-                        Message
+                        Mensaje
                     </label>
                     <textarea 
                         id="message" 
@@ -103,7 +103,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            Start Date (Optional)
+                            Fecha de Inicio (Opcional)
                         </label>
                         <input 
                             type="date" 
@@ -119,7 +119,7 @@
 
                     <div>
                         <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            End Date (Optional)
+                            Fecha de Fin (Opcional)
                         </label>
                         <input 
                             type="date" 
@@ -143,17 +143,17 @@
                             class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                             {{ old('active', $autoReply->active) ? 'checked' : '' }}
                         >
-                        <span class="ml-2 text-sm text-gray-700">Auto-reply is active</span>
+                        <span class="ml-2 text-sm text-gray-700">La respuesta automática está activa</span>
                     </label>
                 </div>
             </div>
 
             <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
                 <a href="{{ route('auto-reply.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                    Cancel
+                    Cancelar
                 </a>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors">
-                    Update Auto-Reply
+                    Actualizar Respuesta Automática
                 </button>
             </div>
         </form>

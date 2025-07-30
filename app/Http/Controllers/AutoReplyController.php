@@ -44,7 +44,7 @@ class AutoReplyController extends Controller
         ]);
 
         return redirect()->route('auto-reply.index')
-            ->with('success', 'Auto-reply created successfully!');
+            ->with('success', '¡Respuesta automática creada exitosamente!');
     }
 
     public function edit(AutoReply $autoReply)
@@ -74,7 +74,7 @@ class AutoReplyController extends Controller
         ]);
 
         return redirect()->route('auto-reply.index')
-            ->with('success', 'Auto-reply updated successfully!');
+            ->with('success', '¡Respuesta automática actualizada exitosamente!');
     }
 
     public function destroy(AutoReply $autoReply)
@@ -82,6 +82,6 @@ class AutoReplyController extends Controller
         $autoReply->delete();
 
         return redirect()->route('auto-reply.index')
-            ->with('success', 'Auto-reply deleted successfully!');
+            ->with('success', '¡Respuesta automática eliminada exitosamente!');
     }
 }

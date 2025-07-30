@@ -32,19 +32,19 @@ class EmailAliasController extends Controller
         ]);
 
         // Agregar el dominio al alias
-        $aliasEmail = $validated['alias'] . '@devdatep.com';
+        $aliasEmail = $validated['alias'] . '@equipo1.com';
 
         // Verificar que el alias no exista como mailbox
         if (Mailbox::where('email', $aliasEmail)->exists()) {
             return back()->withErrors([
-                'alias' => 'This email address already exists as a mailbox.'
+                'alias' => 'Esta dirección de correo ya existe como buzón.'
             ])->withInput();
         }
 
         // Verificar que no exista ya un alias con el mismo email
         if (EmailAlias::where('alias_email', $aliasEmail)->exists()) {
             return back()->withErrors([
-                'alias' => 'This alias already exists.'
+                'alias' => 'Este alias ya existe.'
             ])->withInput();
         }
 
@@ -58,7 +58,7 @@ class EmailAliasController extends Controller
         ]);
 
         return redirect()->route('email-alias.index')
-            ->with('success', 'Email alias created successfully!');
+            ->with('success', '¡Alias de correo creado exitosamente!');
     }
 
     public function edit(EmailAlias $alias)
@@ -82,7 +82,7 @@ class EmailAliasController extends Controller
         ]);
 
         return redirect()->route('email-alias.index')
-            ->with('success', 'Email alias updated successfully!');
+            ->with('success', '¡Alias de correo actualizado exitosamente!');
     }
 
     public function destroy(EmailAlias $alias)
@@ -90,6 +90,6 @@ class EmailAliasController extends Controller
         $alias->delete();
 
         return redirect()->route('email-alias.index')
-            ->with('success', 'Email alias deleted successfully!');
+            ->with('success', '¡Alias de correo eliminado exitosamente!');
     }
 }
